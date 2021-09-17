@@ -203,8 +203,8 @@ module.exports.play = async msg => {
     if (key == "\\q"){
  
         if ( connection == undefined ? msg.member.voice.channel : connection.channel.id != msg.member.voice.channel.id ) connection = await msg.member.voice.channel.join();
-       
-        var keyWord = urlCheck == -1 ? order : msg.embeds[0].title;
+       console.log(msg)
+        var keyWord = urlCheck == -1 ? order : await msg.embeds[0].title;
         var a = await yts(keyWord);
         var data = a.videos[0];
         console.log(data);
