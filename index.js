@@ -10,7 +10,7 @@ bot.on('ready' , () => {
 
 bot.on("message", play.play );
 
-bot.on("message" ,play.textToSpeech);
+//bot.on("message" ,play.textToSpeech);
 
 
 bot.login(process.env.TOKEN); 
