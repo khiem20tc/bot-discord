@@ -1,6 +1,6 @@
 const ytdl = require("ytdl-core");
 const yts = require('yt-search');
-//const textToSpeech = require('@google-cloud/text-to-speech');
+const textToSpeech = require('@google-cloud/text-to-speech');
 const fs = require("fs");
 require("dotenv").config();
 var util = require("util");
@@ -9,33 +9,33 @@ const { DH_NOT_SUITABLE_GENERATOR } = require("constants");
 const { repeat, indexOf } = require("ffmpeg-static");
 const { time } = require("console");
 
-// const keyFile = 'textToSpeech/authClientAPIGoogle.json';
-// const projectId = process.env.PROJECTID;
+const keyFile = 'textToSpeech/authClientAPIGoogle.json';
+const projectId = process.env.PROJECTID;
 
 
-// const client = new textToSpeech.TextToSpeechClient({
-//     projectId,
-//     keyFile
-// });
+const client = new textToSpeech.TextToSpeechClient({
+    projectId,
+    keyFile
+});
 
-// const setting = {
-//     "audioConfig": {
-//         "audioEncoding": "LINEAR16",
-//         "pitch": 00,
-//         "speakingRate": 0.75,
-//         "sampleRateHertz": 16000
-//     },
-//     "input": {
-//         "text": ""
-//     },
-//     "voice": {
-//         "languageCode": "vi-VN",
-//         "name": "vi-VN-Standard-A"
-//     },
-//     "outputFileName": "output1.mp3"
-// }
+const setting = {
+    "audioConfig": {
+        "audioEncoding": "LINEAR16",
+        "pitch": 00,
+        "speakingRate": 0.75,
+        "sampleRateHertz": 16000
+    },
+    "input": {
+        "text": ""
+    },
+    "voice": {
+        "languageCode": "vi-VN",
+        "name": "vi-VN-Standard-A"
+    },
+    "outputFileName": "output1.mp3"
+}
 
-//console.log(projectId);
+console.log(projectId);
 
 
 var playList = [];
@@ -74,17 +74,11 @@ async function play(connection , msg , begin, index) {
         }    
         // console.log(playList);
  
-        // dispatch = connection.play(ytdl(url, { format: "audioonly" }), {
-        //     seek: begin,
-        //     fec: true,
-        //     bitrate : "auto",
-        // });
-
-        dispatch = connection.play(ytdl(url, { format: 'audioonly' }), {
+        dispatch = connection.play(await ytdl(url, { format: "audioonly" }), {
             seek: begin,
             fec: true,
-            bitrate: 'auto',
-          });
+            bitrate : "auto",
+        });
        
         dispatch.setVolume(volume /100);
         
@@ -127,66 +121,66 @@ async function play(connection , msg , begin, index) {
         })
 };
 
-// async function streamVoice (msg , timeStream){
+async function streamVoice (msg , timeStream){
 
-//     try{
-//         setting.input.text = voiceList.shift()
-//     }catch(err){
-//         console.log(err)
-//         return
-//     }
-//     onVoice = true;
-//     voiceFlag = true;
-//     const [res] = await client.synthesizeSpeech(setting);
+    try{
+        setting.input.text = voiceList.shift()
+    }catch(err){
+        console.log(err)
+        return
+    }
+    onVoice = true;
+    voiceFlag = true;
+    const [res] = await client.synthesizeSpeech(setting);
  
-//     const writeFile = util.promisify(fs.writeFile);
+    const writeFile = util.promisify(fs.writeFile);
 
-//     await writeFile(setting.outputFileName, res.audioContent, "binary");
+    await writeFile(setting.outputFileName, res.audioContent, "binary");
  
-//     // var broadCast = bot.voice.createBroadcast();
+    // var broadCast = bot.voice.createBroadcast();
     
-//     if ( connection == undefined ? msg.member.voice.channel : connection.channel.id != msg.member.voice.channel.id ) connection = await msg.member.voice.channel.join();
-//     try {
-//         // let connection = await msg.member.voice.channel.join();
-//         // dispatch.pause(true);
-//         var dis =  await connection.play("output1.mp3");
-//         dis.setVolume(2);
+    if ( connection == undefined ? msg.member.voice.channel : connection.channel.id != msg.member.voice.channel.id ) connection = await msg.member.voice.channel.join();
+    try {
+        // let connection = await msg.member.voice.channel.join();
+        // dispatch.pause(true);
+        var dis =  await connection.play("output1.mp3");
+        dis.setVolume(2);
 
 
-//         dis.on( "finish" , () => {
+        dis.on( "finish" , () => {
             
-//             if ( voiceList.length > 0) 
+            if ( voiceList.length > 0) 
             
-//                 streamVoice(msg , timeStream) 
-//             else
-//             { 
-//                 onVoice = false
-//                 play(connection , msg , timeStream , indexPlay >= playList.length ? 0 : indexPlay)
-//             }
-//         });
-//     } catch(err) {
-//         var dis = await connection.play("output1.mp3");
-//         dis.setVolume(2);
+                streamVoice(msg , timeStream) 
+            else
+            { 
+                onVoice = false
+                play(connection , msg , timeStream , indexPlay >= playList.length ? 0 : indexPlay)
+            }
+        });
+    } catch(err) {
+        var dis = await connection.play("output1.mp3");
+        dis.setVolume(2);
 
-//         clearTimeout(countDown);
+        clearTimeout(countDown);
         
-//         countDown = setTimeout(function (con) {
-//             con.disconnect();
-//             connection = undefined;
-//             dispatch = undefined;
-//             countDown = undefined;
-//             voiceList = [];
-//             voiceFlag = false;
-//             onVoice = false;
-//             volume = 50;
-//             playList.splice(0);
-//         }, 1000 * 60 * 60);
-//         if (voiceList.length > 0) streamVoice(msg , timeStream)
-//         else
-//             onVoice = false
-//     }  
+        countDown = setTimeout(function (con) {
+            con.disconnect();
+            connection = undefined;
+            dispatch = undefined;
+            countDown = undefined;
+            voiceList = [];
+            voiceFlag = false;
+            onVoice = false;
+            volume = 50;
+            playList.splice(0);
+        }, 1000 * 60 * 60);
+        if (voiceList.length > 0) streamVoice(msg , timeStream)
+        else
+            onVoice = false
+    }  
 
-// }
+}
 
 module.exports.play = async msg => {
     
@@ -446,36 +440,36 @@ module.exports.play = async msg => {
     
 }
  
-// module.exports.textToSpeech = async msg => {
-//     if (msg.author.bot || !msg.guild || !msg.content.startsWith('\\')) return; 
-//     var i = msg.content.indexOf(' ');
-//     // console.log(msg.author.bot);
+module.exports.textToSpeech = async msg => {
+    if (msg.author.bot || !msg.guild || !msg.content.startsWith('\\')) return; 
+    var i = msg.content.indexOf(' ');
+    // console.log(msg.author.bot);
 
-//     var key = msg.content.slice(0, i);
+    var key = msg.content.slice(0, i);
 
-//     // console.log(msg.content);
-//     try {
-//         var order = msg.content.substr(i);
-//     } catch (err) { 
-//         var order = "";
-//     }
+    // console.log(msg.content);
+    try {
+        var order = msg.content.substr(i);
+    } catch (err) { 
+        var order = "";
+    }
 
-//     if (key != "\\tts" && msg.content != "\\tts") return;
+    if (key != "\\tts" && msg.content != "\\tts") return;
 
-//     voiceList.push(order != "s" ? order : "Nhập cái gì đó đi thằng lồn!"); 
+    voiceList.push(order != "s" ? order : "Nhập cái gì đó đi thằng lồn!"); 
 
     
     
 
-//         var timeStream
-//         try{
+        var timeStream
+        try{
             
-//             timeStream = dispatch.totalStreamTime / 1000 + dispatch.streamOptions.seek;
+            timeStream = dispatch.totalStreamTime / 1000 + dispatch.streamOptions.seek;
         
-//         }catch (err){
-//             timeStream = 0
-//         }
-//         if (voiceFlag == false)
-//         streamVoice(msg , timeStream)
+        }catch (err){
+            timeStream = 0
+        }
+        if (voiceFlag == false)
+        streamVoice(msg , timeStream)
     
-// }
+}
